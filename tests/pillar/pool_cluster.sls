@@ -6,6 +6,8 @@ kubernetes:
   pool:
     enabled: true
     version: v1.2.0
+    host:
+      name: ${linux:system:name}
     master:
       host: 127.0.0.1
       apiserver:
