@@ -16,6 +16,35 @@ Extended on Contrail contribution https://github.com/Juniper/kubernetes/blob/ope
 Sample pillars
 ==============
 
+Containers on pool definitions in pool.service.local
+
+parameters:
+  kubernetes:
+    pool:
+      service:
+        local:
+          enabled: False
+          service: libvirt
+          cluster: openstack-compute
+          namespace: default
+          role: ${linux:system:name}
+          type: LoadBalancer
+          kind: Deployment
+          apiVersion: extensions/v1beta1
+          replicas: 1
+          host_pid: True
+          nodeSelector:
+          - key: openstack
+            value: ${linux:system:name}
+          hostNetwork: True
+          container:
+            libvirt-compute:
+              privileged: True
+              image: ${_param:docker_repository}/libvirt-compute
+              tag: ${_param:openstack_container_tag}
+
+Master definition
+
 .. code-block:: yaml
 
     kubernetes:
@@ -154,6 +183,15 @@ On Master:
       master:
         network:
           engine: flannel
+If you don't register master as node:
+          etcd:
+            members:
+              - host: 10.0.175.101
+                port: 4001
+              - host: 10.0.175.102
+                port: 4001
+              - host: 10.0.175.103
+                port: 4001
       common:
         network:
           engine: flannel
@@ -166,6 +204,14 @@ On pools:
       pool:
         network:
           engine: flannel
+          etcd:
+            members:
+              - host: 10.0.175.101
+                port: 4001
+              - host: 10.0.175.102
+                port: 4001
+              - host: 10.0.175.103
+                port: 4001
       common:
         network:
           engine: flannel
@@ -181,6 +227,15 @@ On Master:
       master:
         network:
           engine: calico
+If you don't register master as node:
+          etcd:
+            members:
+              - host: 10.0.175.101
+                port: 4001
+              - host: 10.0.175.102
+                port: 4001
+              - host: 10.0.175.103
+                port: 4001
 
 On pools:
 
@@ -190,6 +245,14 @@ On pools:
       pool:
         network:
           engine: calico
+          etcd:
+            members:
+              - host: 10.0.175.101
+                port: 4001
+              - host: 10.0.175.102
+                port: 4001
+              - host: 10.0.175.103
+                port: 4001
 
 Kubernetes with GlusterFS for storage
 ---------------------------------------------
@@ -210,6 +273,69 @@ Kubernetes with GlusterFS for storage
           - host: 10.0.175.103
             port: 24007
          ...
+
+Kubernetes namespaces
+---------------------
+
+Create namespace:
+
+.. code-block:: yaml
+
+    kubernetes:
+      master
+        ...
+        namespace:
+          kube-system:
+            enabled: True
+          namespace2:
+            enabled: True
+          namespace3:
+            enabled: False
+         ...
+
+Kubernetes labels
+-----------------
+
+Create namespace:
+
+.. code-block:: yaml
+
+    kubernetes:
+      pool
+        ...
+        host:
+          label:
+            key01:
+              value: value01
+              enable: True
+            key02:
+              value: value02
+              enable: False
+          name: ${linux:system:name}
+         ...
+
+Pull images from private registries
+-----------------------------------
+
+.. code-block:: yaml
+
+    kubernetes:
+      master
+        ...
+        registry:
+          secret:
+            registry01:
+              enabled: True
+              key: (get from `cat /root/.docker/config.json | base64`)
+              namespace: default
+         ...
+      control:
+        ...
+        service:
+          service01:
+          ...
+          image_pull_secretes: registry01
+          ...
 
 Kubernetes Service Definitions in pillars
 ==========================================
@@ -282,7 +408,7 @@ hostPath
         path: /etc/certs
 
 emptyDir
-===========
+========
 
 .. code-block:: yaml
 

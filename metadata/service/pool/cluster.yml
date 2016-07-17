@@ -7,20 +7,20 @@ parameters:
   kubernetes:
     pool:
       enabled: true
-      version: v1.2.0
-      master:
+      version: ${_param:kubernetes_version}
+      registry:
+        host: tcpcloud
+      host:
+        name: ${linux:system:name}
+      apiserver:
         host: ${_param:cluster_vip_address}
-        apiserver:
-          members:
-            - host: ${_param:cluster_node01_address}
-            - host: ${_param:cluster_node02_address}
-            - host: ${_param:cluster_node03_address}
-        etcd:
-          members:
-            - host: ${_param:cluster_node01_address}
-            - host: ${_param:cluster_node02_address}
-            - host: ${_param:cluster_node03_address}
-      address: 0.0.0.0
+        insecure:
+          enabled: True
+        members:
+          - host: ${_param:cluster_node01_address}
+          - host: ${_param:cluster_node02_address}
+          - host: ${_param:cluster_node03_address}
+      address: ${_param:cluster_local_address}
       cluster_dns: 10.254.0.10
       cluster_domain: cluster.local
       kubelet:
@@ -28,6 +28,15 @@ parameters:
         allow_privileged: True
         frequency: 5s
       token:
-        kubelet: 7bN5hJ9JD4fKjnFTkUKsvVNfuyEddw3r
-        kube_proxy: DFvQ8GelB7afH3wClC9romaMPhquyyEe
+        kubelet: ${_param:kubernetes_kubelet_token}
+        kube_proxy: ${_param:kubernetes_kube-proxy_token}
       ca: kubernetes
+      network:
+        etcd:
+          members:
+          - host: ${_param:cluster_node01_address}
+            port: 4001
+          - host: ${_param:cluster_node02_address}
+            port: 4001
+          - host: ${_param:cluster_node03_address}
+            port: 4001

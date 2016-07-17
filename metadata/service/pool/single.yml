@@ -7,15 +7,17 @@ parameters:
   kubernetes:
     pool:
       enabled: true
-      version: v1.2.0
-      master:
+      version: ${_param:kubernetes_version}
+      registry:
+        host: tcpcloud
+      host:
+        name: ${linux:system:name}
+      apiserver:
         host: ${_param:master_address}
-        apiserver:
-          members:
-            - host: ${_param:master_address}
-        etcd:
-          members:
-            - host: ${_param:master_address}
+        insecure:
+          enabled: True
+        members:
+          - host: ${_param:master_address}
       address: 0.0.0.0
       cluster_dns: 10.254.0.10
       allow_privileged: True
@@ -25,6 +27,11 @@ parameters:
         allow_privileged: True
         frequency: 5s
       token:
-        kubelet: 7bN5hJ9JD4fKjnFTkUKsvVNfuyEddw3r
-        kube_proxy: DFvQ8GelB7afH3wClC9romaMPhquyyEe
+        kubelet: ${_param:kubernetes_kubelet_token}
+        kube_proxy: ${_param:kubernetes_kube-proxy_token}
       ca: kubernetes
+      network:
+        etcd:
+          members:
+            - host: ${_param:master_address}
+              port: 4001

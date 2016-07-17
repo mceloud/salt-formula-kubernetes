@@ -2,35 +2,28 @@ applications:
 - kubernetes
 classes:
 - service.kubernetes.support
-- system.nginx.server.single
 - service.kubernetes.common
 parameters:
-  nginx:
-    server:
-      site:
-        kubernetes_master:
-          enabled: true
-          type: kubernetes
-          name: master
-          host:
-            name: ${_param:nginx_kubernetes_master_host}
   kubernetes:
     master:
       enabled: true
-      version: v1.2.0
-      registry: tcpcloud
+      version: ${_param:kubernetes_version}
+      registry:
+        host: tcpcloud
       service_addresses: 10.254.0.0/16
       admin:
-        username: admin
-        password: password
+        username: ${_param:kubernetes_admin_user}
+        password: ${_param:kubernetes_admin_password}
       kubelet:
         allow_privileged: True
       apiserver:
-        address: ${_param:apiserver_address}
-        port: 8080
+        address: ${_param:cluster_local_address}
+        insecure_address: 0.0.0.0
       etcd:
-        host: 10.10.6.187
-        token: ca939ec9c2a17b0786f6d411fe019e9b
+        host: ${_param:cluster_local_address}
+        registry: quay.io/coreos
+        version: ${_param:etcd_version}
+        token: ${_param:etcd_initial_token}
         name: ${linux:system:name}
         members:
           - host: ${_param:cluster_node01_address}
@@ -45,21 +38,25 @@ parameters:
           replicas: 1
           domain: cluster.local
           server: 10.254.0.10
-        ui:
-          enabled: true
-          public_ip: 185.22.97.131
-        heapster_influxdb:
-          enabled: true
-          public_ip: 185.22.97.132
       token:
-        admin: DFvQ8GJ9JD4fKNfuyEddw3rjnFTkUKsv
-        kubelet: 7bN5hJ9JD4fKjnFTkUKsvVNfuyEddw3r
-        kube_proxy: DFvQ8GelB7afH3wClC9romaMPhquyyEe
-        scheduler: HY1UUxEPpmjW4a1dDLGIANYQp1nZkLDk
-        controller_manager: EreGh6AnWf8DxH8cYavB2zS029PUi7vx
-        logging: MJkXKdbgqRmTHSa2ykTaOaMykgO6KcEf
-        monitoring: hnsj0XqABgrSww7Nqo7UVTSZLJUt2XRd
-        dns: RAFeVSE4UvsCz4gk3KYReuOI5jsZ1Xt3
+        admin: ${_param:kubernetes_admin_token}
+        kubelet: ${_param:kubernetes_kubelet_token}
+        kube_proxy: ${_param:kubernetes_kube-proxy_token}
+        scheduler: ${_param:kubernetes_scheduler_token}
+        controller_manager: ${_param:kubernetes_controller-manager_token}
+        dns: ${_param:kubernetes_dns_token}
       ca: kubernetes
       storage:
         engine: none
+      namespace:
+        kube-system:
+          enabled: True
+      network:
+        etcd:
+          members:
+          - host: ${_param:cluster_node01_address}
+            port: 4001
+          - host: ${_param:cluster_node02_address}
+            port: 4001
+          - host: ${_param:cluster_node03_address}
+            port: 4001

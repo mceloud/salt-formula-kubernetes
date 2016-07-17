@@ -16,6 +16,9 @@ spec:
       {%- if service.hostNetwork is defined %}
       hostNetwork: True
       {%- endif %}
+      {%- if service.host_pid is defined %}
+      hostPID: True
+      {%- endif %}
       containers:
       {%- for container_name, container in service.container.iteritems() %}
         - name: {{ container_name }}
@@ -114,4 +117,8 @@ spec:
         {%- for selector in service.nodeSelector %}
         {{ selector.key }}: {{ selector.value }}
         {%- endfor %}
+      {%- endif %}
+      {%- if service.image_pull_secretes is defined %}
+      imagePullSecrets:
+        - name: {{ service.image_pull_secretes }}
       {%- endif %}
